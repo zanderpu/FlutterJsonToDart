@@ -24,13 +24,10 @@ public class FlutterJsonToDartAction extends AnAction {
             return;
         }
 
-        Navigatable data = LangDataKeys.NAVIGATABLE.getData(event.getDataContext());
-        if (data == null) {
+        PsiDirectory directory = getSelectedDirectory(event);
+        if (directory == null) {
             return;
         }
-        PsiDirectory directory = (PsiDirectory) data;
-
-        //弹一个 dialog，用户可以输入 json
 
         InputJsonDialog dialog = new InputJsonDialog(project);
         dialog.show();
@@ -47,12 +44,8 @@ public class FlutterJsonToDartAction extends AnAction {
         FlutterJsonToDartSetting instance = FlutterJsonToDartSetting.getInstance();
         String generatorClassContent = JsonHelper.generateDartClassesToString(inputClassName, inputJsonStr, instance);
 
-
-
         CommandProcessor.getInstance().executeCommand(project, () -> {
-            //添加 dart 文件
             ApplicationManager.getApplication().runWriteAction(() -> {
-                //文件名，小写，可以带下划线
                 String fileName = StringUtils.getFileName(inputClassName);
                 PsiFileFactory psiFileFactory = PsiFileFactory.getInstance(project);
                 DartFile file = (DartFile) psiFileFactory.createFileFromText(fileName + ".dart", DartFileType.INSTANCE, generatorClassContent);
@@ -61,12 +54,16 @@ public class FlutterJsonToDartAction extends AnAction {
         }, "FlutterJsonToDart", "FlutterJsonToDart");
 
         showNotify(project, "Dart Data Class file generated successful");
-
-        // 添加 json_serializable 依赖，并执行相关命令
         CommandUtil.runFlutterPubRun(event);
-
     }
 
+    private PsiDirectory getSelectedDirectory(@NotNull AnActionEvent event) {
+        Navigatable data = LangDataKeys.NAVIGATABLE.getData(event.getDataContext());
+        if (data instanceof PsiDirectory) {
+            return (PsiDirectory) data;
+        }
+        return null;
+    }
 
     private void showNotify(Project project, String content) {
         NotificationGroupManager.getInstance()
@@ -78,9 +75,6 @@ public class FlutterJsonToDartAction extends AnAction {
     @Override
     public void update(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
-        boolean enabled = project != null && file != null && file.isDirectory();
-        //项目不为空，并且点击的是一个目录时，显示 action
-        e.getPresentation().setEnabledAndVisible(enabled);
+        e.getPresentation().setEnabledAndVisible(project != null);
     }
 }

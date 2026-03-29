@@ -8,8 +8,8 @@ fun properties(key: String) = project.findProperty(key).toString()
 plugins {
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.7.21"
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.kotlin.jvm") version "1.9.22"
+    id("org.jetbrains.intellij") version "1.17.4"
     id("org.jetbrains.changelog") version "2.0.0"
 }
 
@@ -21,17 +21,13 @@ repositories {
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
-    version.set("2021.3.3")
+    version.set("2024.1.2")
     type.set("IC") // Target IDE Platform
 
     plugins.set(
         listOf(
             "com.intellij.java",
-            //因为要生成 dart 文件，需要使用到 dart 插件中的类，所以这里要引入 dart 插件
-            "Dart:213.5744.122", //https://plugins.jetbrains.com/plugin/6351-dart/versions
-//            "io.flutter:63.2.4",//https://plugins.jetbrains.com/plugin/9212-flutter/versions/stable
-            "com.jetbrains.sh:213.5744.121", ////https://plugins.jetbrains.com/plugin/13122-shell-script/versions
-            "org.jetbrains.plugins.terminal:213.5744.121", //https://plugins.jetbrains.com/plugin/13123-terminal/versions
+            "Dart:241.17502",
         )
     )
 }
@@ -50,13 +46,13 @@ tasks {
 
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
 
     patchPluginXml {
-        sinceBuild.set("203.*")
-        untilBuild.set("300")
+        sinceBuild.set("241.*")
+        untilBuild.set("255.*")
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription.set(
